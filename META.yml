@@ -1,0 +1,43 @@
+---
+abstract: 'it seems sweet, but it probably has long-term adverse health effects'
+author:
+  - 'Toby Inkster <tobyink@cpan.org>'
+build_requires:
+  ExtUtils::MakeMaker: 6.59
+  Test::More: 0.96
+configure_requires:
+  ExtUtils::MakeMaker: 6.59
+distribution_type: module
+dynamic_config: 0
+generated_by: 'Module::Install version 1.06'
+keywords: []
+license: perl
+meta-spec:
+  url: http://module-build.sourceforge.net/META-spec-v1.4.html
+  version: 1.4
+module_name: MooX::Aspartame
+name: MooX-Aspartame
+no_index:
+  directory:
+    - inc
+    - t
+    - xt
+requires:
+  Devel::Pragma: 0.54
+  Exporter::TypeTiny: 0.014
+  Function::Parameters: 1.0104
+  Import::Into: 1.000000
+  Keyword::Simple: 0.01
+  Module::Runtime: 0.013
+  Moo: 1.002000
+  Scalar::Util: 1.24
+  Try::Tiny: 0.12
+  namespace::sweep: 0.006
+  perl: 5.14.0
+  true: 0.18
+resources:
+  bugtracker: http://rt.cpan.org/Dist/Display.html?Queue=MooX-Aspartame
+  homepage: https://metacpan.org/release/MooX-Aspartame
+  license: http://dev.perl.org/licenses/
+  repository: https://github.com/tobyink/p5-moox-aspartame
+version: 0.001

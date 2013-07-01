@@ -1,0 +1,123 @@
+NAME
+    MooX::Aspartame - it seems sweet, but it probably has long-term adverse
+    health effects
+
+SYNOPSIS
+       use MooX::Aspartame;
+   
+       role NamedThing {
+          has name => (is => "ro", isa => Str);
+       }
+   
+       class Person with NamedThing;
+   
+       class Company with NamedThing;
+   
+       class Employee extends Person {
+          has job_title => (is => "rwp", isa => Str);
+          has employer  => (is => "rwp", isa => InstanceOf["Company"]);
+      
+          method change_job ( (Object) $employer, (Str) $title ) {
+             $self->_set_job_title($title);
+             $self->_set_employer($employer);
+          }
+      
+          method promote ( (Str) $title ) {
+             $self->_set_job_title($title);
+          }
+       }
+
+DESCRIPTION
+    This is something like a lightweight MooseX::Declare. It gives you three
+    keywords:
+
+    "class"
+        Declares a class. By default this uses Moo. But it's possible to
+        promote a class to Moose with the "using" option:
+
+           class Employee using Moose { ... }
+
+        Other options for classes are "extends" for setting a parent class,
+        and "with" for composing roles.
+
+    "role"
+        Declares a role using Moo::Role. This also supports "using Moose",
+        and "with".
+
+    "exporter"
+        Declares a utilities package. This supports a "providing" option to
+        add function names to @EXPORT_OK.
+
+           exporter Utils providing find_person, find_company {
+              fun find_person ( (Str) $name ) {
+                 ...;
+              }
+              fun find_company ( (Str) $name ) {
+                 ...;
+              }
+           }
+   
+           use Utils find_person => { -as => "get_person" };
+           my $bob = get_person("Bob");
+
+        Exporters are built using Exporter::TypeTiny.
+
+    Within the packages declared by these keywords, the following features
+    are always available:
+
+    *   Perl 5.14 features. (MooX::Aspartame requires Perl 5.14.)
+
+    *   Strictures, including "FATAL" warnings, but not "uninitialized",
+        "void", "once" or "numeric" warnings.
+
+    *   Function::Parameters (in strict mode)
+
+    *   Try::Tiny
+
+    *   Types::Standard type constraints
+
+    *   Carp's "confess"
+
+    *   Scalar::Util's "blessed"
+
+    *   Constants for "true" and "false".
+
+    *   namespace::sweep, except within exporters.
+
+    It is possible to inject other functions into all packages using:
+
+       use MooX::Aspartame [
+          'List::Util'      => [qw( first reduce )],
+          'List::MoreUtils' => [qw( any all none )],
+       ];
+
+    In the "outer" package (where MooX::Aspartame is used), Try::Tiny and
+    true are provided.
+
+BUGS
+    Please report any bugs to
+    <http://rt.cpan.org/Dist/Display.html?Queue=MooX-Aspartame>.
+
+SEE ALSO
+    Similar: MooseX::Declare.
+
+    Main functionality exposed by this module: Moo, Function::Parameters,
+    Try::Tiny, Types::Standard, namespace::sweep, Exporter::TypeTiny.
+
+    Internals fueled by: Keyword::Simple, Module::Runtime, Import::Into,
+    Devel::Pragma.
+
+AUTHOR
+    Toby Inkster <tobyink@cpan.org>.
+
+COPYRIGHT AND LICENCE
+    This software is copyright (c) 2013 by Toby Inkster.
+
+    This is free software; you can redistribute it and/or modify it under
+    the same terms as the Perl 5 programming language system itself.
+
+DISCLAIMER OF WARRANTIES
+    THIS PACKAGE IS PROVIDED "AS IS" AND WITHOUT ANY EXPRESS OR IMPLIED
+    WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED WARRANTIES OF
+    MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+
