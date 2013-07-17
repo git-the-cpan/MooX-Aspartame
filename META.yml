@@ -30,6 +30,7 @@ requires:
   Keyword::Simple: 0.01
   Module::Runtime: 0.013
   Moo: 1.002000
+  MooX::late: 0.014
   Scalar::Util: 1.24
   Try::Tiny: 0.12
   namespace::sweep: 0.006
@@ -40,4 +41,4 @@ resources:
   homepage: https://metacpan.org/release/MooX-Aspartame
   license: http://dev.perl.org/licenses/
   repository: https://github.com/tobyink/p5-moox-aspartame
-version: 0.001
+version: 0.002

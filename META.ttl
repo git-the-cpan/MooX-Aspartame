@@ -32,7 +32,8 @@ dist:project
 	cpant:requires    "Import::Into 1.000000"^^cpant:dsWithVersion;
 	cpant:requires    "Keyword::Simple 0.01"^^cpant:dsWithVersion;
 	cpant:requires    "Module::Runtime 0.013"^^cpant:dsWithVersion;
-	cpant:requires    "Moo 1.002000"^^cpant:dsWithVersion;
+	cpant:requires    "Moo 1.003000"^^cpant:dsWithVersion;
+	cpant:requires    "MooX::late 0.014"^^cpant:dsWithVersion;
 	cpant:requires    "Scalar::Util 1.24"^^cpant:dsWithVersion;
 	cpant:requires    "Try::Tiny 0.12"^^cpant:dsWithVersion;
 	cpant:requires    "namespace::sweep 0.006"^^cpant:dsWithVersion;
@@ -55,6 +56,7 @@ dist:project
 	doap:maintainer   cpan:tobyink;
 	doap:programming-language "Perl";
 	doap:release      dist:v_0-001;
+	doap:release      dist:v_0-002;
 	doap:repository   [
 		a doap:GitRepository;
 		doap:browse <https://github.com/tobyink/p5-moox-aspartame>;
@@ -69,6 +71,25 @@ dist:v_0-001
 	dcs:released-by   cpan:tobyink;
 	doap:file-release <http://backpan.cpan.org/authors/id/T/TO/TOBYINK/MooX-Aspartame-0.001.tar.gz>;
 	doap:revision     "0.001"^^xsd:string.
+
+dist:v_0-002
+	a                 doap:Version;
+	dc:identifier     "MooX-Aspartame-0.002"^^xsd:string;
+	dc:issued         "2013-07-17"^^xsd:date;
+	dcs:changeset     [
+		dcs:item [
+			a dcs:Change;
+			rdfs:label "Misc internal refactoring.";
+		];
+		dcs:item [
+			a dcs:Addition;
+			rdfs:label "use MooX::late 0.014.";
+		];
+		dcs:item [ a dcs:Update; rdfs:label "use Moo 1.003000." ];
+	];
+	dcs:released-by   cpan:tobyink;
+	doap:file-release <http://backpan.cpan.org/authors/id/T/TO/TOBYINK/MooX-Aspartame-0.002.tar.gz>;
+	doap:revision     "0.002"^^xsd:string.
 
 cpan:tobyink
 	a                 foaf:Person;
