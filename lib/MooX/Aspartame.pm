@@ -8,7 +8,7 @@ use warnings FATAL => 'all';
 no warnings @crud;
 
 our $AUTHORITY = 'cpan:TOBYINK';
-our $VERSION   = '0.002';
+our $VERSION   = '0.003';
 
 use B                               qw(perlstring);
 use Carp                            qw(croak);
@@ -22,6 +22,7 @@ use Moo                   1.002000  qw();
 use MooX::late            0.014     qw();
 use Scalar::Util          1.24      qw();
 use Try::Tiny             0.12      qw();
+use Type::Utils           0.022     qw();
 use namespace::sweep      0.006;
 use true                  0.18;
 
@@ -30,7 +31,7 @@ my @IMPORTS;
 sub unimport
 {
 	shift;
-	Keyword::Simple::undefine $_ for qw/ class role exporter /;
+	Keyword::Simple::undefine $_ for qw/ class role exporter namespace /;
 }
 
 sub import
@@ -45,7 +46,6 @@ sub import
 			[ warnings    => [ FATAL => 'all' ] ],
 			[ feature     => [ ':5.14' ] ],
 			[ true        => [] ],
-			[ 'Try::Tiny' => [] ],
 		);
 	warnings->unimport(@crud);
 	
@@ -53,7 +53,7 @@ sub import
 	push @IMPORTS, $imports;
 	my $id = $#IMPORTS;
 	
-	for my $kw (qw/class role exporter/)
+	for my $kw (qw/class role exporter namespace/)
 	{
 		Keyword::Simple::define $kw => sub
 		{
@@ -63,7 +63,7 @@ sub import
 			# First thing after the keyword is the name of the package
 			# being declared.
 			my $ref = shift;
-			my ($space1, $package, $space2) = ($$ref =~ /^(\s*)(\+?$module_name_rx)\b(\s*)/sm);
+			my ($space1, $package, $space2) = ($$ref =~ /^(\s*)((?:::)?$module_name_rx)\b(\s*)/sm);
 			substr($$ref, 0, length($space1.$package.$space2)) = "";
 			
 			# This is optionally followed by a version number.
@@ -77,7 +77,7 @@ sub import
 			# Then a list of relationships such as `extends Foo`.
 			my $RELS = join '|', map quotemeta, $class->_relationships($kw);
 			my %relationships;
-			while ($$ref =~ /^($RELS)(\s+)(\+?$module_name_rx(?:\s*,\s*\+?$module_name_rx)*)\b(\s*)/sm)
+			while ($$ref =~ /^($RELS)(\s+)((?:::)?$module_name_rx(?:\s*,\s*(?:::)?$module_name_rx)*)\b(\s*)/sm)
 			{
 				my $rel = $1; my $space1 = $2; my $modules = $3; my $space2 = $4;
 				substr($$ref, 0, length($rel.$space1.$modules.$space2)) = "";
@@ -112,8 +112,69 @@ sub _relationships
 	my ($kw) = @_;
 	return qw(with using)          if $kw eq q(role);
 	return qw(with extends using)  if $kw eq q(class);
-	return qw(providing)           if $kw eq q(exporter);
+	return qw(providing using)     if $kw eq q(exporter);
 	return qw();
+}
+
+sub _should_qualify
+{
+	shift;
+	return 1 if $_[0] =~ /^(package|with|extends)$/;
+}
+
+sub _qualify
+{
+	my $class = shift;
+	my ($bareword, $caller, $rel) = @_;
+	return $1                    if $bareword =~ /^::(.+)$/;
+	return $bareword             if $caller eq 'main';
+	return $bareword             if $bareword =~ /::/;
+	return "$caller\::$bareword" if $class->_should_qualify($rel);
+	return $bareword;
+}
+
+sub _function_parameters_args
+{
+	my $class = shift;
+	my ($pkg) = @_;
+	
+	my $reify = sub {
+		require Type::Utils;
+		Type::Utils::dwim_type($_[0], for => $_[1]);
+	};
+	
+	return +{
+		fun => {
+			name                 => 'optional',
+			default_arguments    => 1,
+			check_argument_count => 1,
+			named_parameters     => 1,
+			types                => 1,
+			reify_type           => $reify,
+		},
+		method => {
+			name                 => 'optional',
+			default_arguments    => 1,
+			check_argument_count => 1,
+			named_parameters     => 1,
+			types                => 1,
+			reify_type           => $reify,
+			attrs                => ':method',
+			shift                => '$self',
+			invocant             => 1,
+		},
+		classmethod => {
+			name                 => 'optional',
+			default_arguments    => 1,
+			check_argument_count => 1,
+			named_parameters     => 1,
+			types                => 1,
+			reify_type           => $reify,
+			attributes           => ':method',
+			shift                => '$class',
+			invocant             => 1,
+		},
+	};
 }
 
 sub _package_preamble_always
@@ -124,12 +185,12 @@ sub _package_preamble_always
 	return if $empty;
 	
 	return (
-		"use Carp qw(confess);",
-		"use Function::Parameters { fun => 'function_strict', method => 'method_strict', classmethod => 'classmethod_strict' };",
-		"use Scalar::Util qw(blessed);",
-		"use Try::Tiny;",
-		"use Types::Standard qw(-types);",
-		"use constant { true => !!1, false => !!0 };",
+		'use Carp qw(confess);',
+		"use Function::Parameters $class\->_function_parameters_args(q[$package]);",
+		'use Scalar::Util qw(blessed);',
+		'use Try::Tiny;',
+		'use Types::Standard qw(-types);',
+		'use constant { true => !!1, false => !!0 };',
 		"no warnings qw(@crud);",
 	);
 }
@@ -154,23 +215,32 @@ sub _package_preamble_relationship_providing
 
 {
 	my %TEMPLATE1 = (
-		Moo   => { class => 'use Moo; use MooX::late;',         role => 'use Moo::Role; use MooX::late;' },
-		Moose => { class => 'use Moose;',                       role => 'use Moose::Role;' },
-		Mouse => { class => 'use Mouse;',                       role => 'use Mouse::Role;' },
-		Tiny  => { class => 'use Acme::Has::Tiny qw(new has);', role => 'use Role::Tiny;' },
+		Moo   => { class => 'use Moo; use MooX::late;',                role => 'use Moo::Role; use MooX::late;' },
+		Moose => { class => 'use Moose;',                              role => 'use Moose::Role;' },
+		Mouse => { class => 'use Mouse;',                              role => 'use Mouse::Role;' },
+		Tiny  => { exporter => 'use parent qw( Exporter::TypeTiny );', role => 'use Role::Tiny;' },
+		'Exporter::TypeTiny'  => { exporter => 'use parent qw( Exporter::TypeTiny );' },
+		'Exporter'            => { exporter => 'use Exporter qw( import );' },
+		(map { $_ => { role => "use $_;" } } qw/ Role::Basic Role::Tiny Moo::Role Mouse::Role Moose::Role /)
 	);
 	my %TEMPLATE2 = (
 		class    => 'use namespace::sweep;',
 		role     => 'use namespace::sweep;',
-		exporter => 'use parent qw( Exporter::TypeTiny );',
 	);
+	
+	# For use with missing 'using' option
+	$TEMPLATE1{''} = +{
+		%{ $TEMPLATE1{'Moo'} },
+		%{ $TEMPLATE1{'Exporter::TypeTiny'} },
+		namespace => '',
+	};
 	
 	sub _package_preamble_relationship_using
 	{
 		my $class = shift;
 		my ($kw, $package, $empty, $using) = @_;
 		(
-			($TEMPLATE1{$using//"Moo"}{$kw} // ''),
+			($TEMPLATE1{$using//''}{$kw} // croak("Cannot build $kw using $using")),
 			($TEMPLATE2{$kw} // ''),
 		)
 	}
@@ -237,14 +307,6 @@ sub _do_imports
 	}
 }
 
-sub _qualify
-{
-	shift;
-	my ($bare, $caller, $rel) = @_;
-	return $1 if $bare =~ /^\+(.+)$/;
-	return $bare;
-}
-
 1;
 
 __END__
@@ -273,12 +335,12 @@ MooX::Aspartame - it seems sweet, but it probably has long-term adverse health e
       has job_title => (is => "rwp", isa => Str);
       has employer  => (is => "rwp", isa => InstanceOf["Company"]);
       
-      method change_job ( (Object) $employer, (Str) $title ) {
+      method change_job ( Object $employer, Str $title ) {
          $self->_set_job_title($title);
          $self->_set_employer($employer);
       }
       
-      method promote ( (Str) $title ) {
+      method promote ( Str $title ) {
          $self->_set_job_title($title);
       }
    }
@@ -286,7 +348,7 @@ MooX::Aspartame - it seems sweet, but it probably has long-term adverse health e
 =head1 DESCRIPTION
 
 This is something like a lightweight L<MooseX::Declare>. It gives you
-three keywords:
+four keywords:
 
 =over
 
@@ -300,6 +362,12 @@ promote a class to L<Moose> with the C<using> option:
 Other options for classes are C<extends> for setting a parent class,
 and C<with> for composing roles.
 
+   class Employee extends Person with Employment;
+
+Note that if you're not directly defining any methods for a class,
+you can use a trailing semicolon (as above) rather than an empty
+C<< { } >> pair.
+
 =item C<role>
 
 Declares a role using L<Moo::Role>. This also supports C<< using Moose >>,
@@ -311,10 +379,10 @@ Declares a utilities package. This supports a C<providing> option to
 add function names to C<< @EXPORT_OK >>.
 
    exporter Utils providing find_person, find_company {
-      fun find_person ( (Str) $name ) {
+      fun find_person ( Str $name ) {
          ...;
       }
-      fun find_company ( (Str) $name ) {
+      fun find_company ( Str $name ) {
          ...;
       }
    }
@@ -322,9 +390,36 @@ add function names to C<< @EXPORT_OK >>.
    use Utils find_person => { -as => "get_person" };
    my $bob = get_person("Bob");
 
-Exporters are built using L<Exporter::TypeTiny>.
+Exporters are built using L<Exporter::TypeTiny> by default, but there's a
+C<< using Exporter >> option.
+
+=item C<namespace>
+
+Declares a package without giving it any special semantics.
 
 =back
+
+Note that the names of the declared things get qualified like subs. So:
+
+   package Foo;
+   use MooX::Aspartame;
+   
+   class Bar {     # declares Foo::Bar
+      role Baz {   # declares Foo::Bar::Baz
+         ...;
+      }
+      class Xyzzy with Baz;
+   }
+   exporter ::Quux {  # declares Quux
+      ...;
+   }
+   
+   package main;
+   use MooX::Aspartame;
+   
+   class Bar {     # declares Bar
+      ...;
+   }
 
 Within the packages declared by these keywords, the following features are
 always available:
@@ -366,7 +461,7 @@ Constants for C<true> and C<false>.
 
 =item *
 
-L<namespace::sweep>, except within exporters.
+L<namespace::sweep> (only for classes and roles).
 
 =back
 
@@ -377,7 +472,7 @@ It is possible to inject other functions into all packages using:
       'List::MoreUtils' => [qw( any all none )],
    ];
 
-In the "outer" package (where MooX::Aspartame is used), L<Try::Tiny> and
+In the "outer" package (where MooX::Aspartame is used), strictures and
 L<true> are provided.
 
 =head1 BUGS

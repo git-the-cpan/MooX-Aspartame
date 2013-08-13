@@ -1,0 +1,79 @@
+{
+   "abstract" : "it seems sweet, but it probably has long-term adverse health effects",
+   "author" : [
+      "Toby Inkster (TOBYINK) <tobyink@cpan.org>"
+   ],
+   "dynamic_config" : 0,
+   "generated_by" : "Dist::Inkt::Profile::TOBYINK version 0.005, CPAN::Meta::Converter version 2.120921",
+   "keywords" : [],
+   "license" : [
+      "perl"
+   ],
+   "meta-spec" : {
+      "url" : "http://search.cpan.org/perldoc?CPAN::Meta::Spec",
+      "version" : "2"
+   },
+   "name" : "MooX-Aspartame",
+   "no_index" : {
+      "directory" : [
+         "eg",
+         "examples",
+         "inc",
+         "t",
+         "xt"
+      ]
+   },
+   "prereqs" : {
+      "configure" : {
+         "requires" : {
+            "ExtUtils::MakeMaker" : "6.17"
+         }
+      },
+      "runtime" : {
+         "requires" : {
+            "Devel::Pragma" : "0.54",
+            "Exporter::TypeTiny" : "0.022",
+            "Function::Parameters" : "1.0201",
+            "Import::Into" : "1.000000",
+            "Keyword::Simple" : "0.01",
+            "Module::Runtime" : "0.013",
+            "Moo" : "1.003000",
+            "MooX::late" : "0.014",
+            "Scalar::Util" : "1.24",
+            "Try::Tiny" : "0.12",
+            "Type::Utils" : "0.022",
+            "namespace::sweep" : "0.006",
+            "true" : "0.18"
+         }
+      },
+      "test" : {
+         "requires" : {
+            "Test::Fatal" : 0,
+            "Test::More" : "0.96"
+         }
+      }
+   },
+   "provides" : {
+      "MooX::Aspartame" : {
+         "file" : "lib/MooX/Aspartame.pm",
+         "version" : "0.003"
+      }
+   },
+   "release_status" : "stable",
+   "resources" : {
+      "X_identifier" : "http://purl.org/NET/cpan-uri/dist/MooX-Aspartame/project",
+      "bugtracker" : {
+         "web" : "http://rt.cpan.org/Dist/Display.html?Queue=MooX-Aspartame"
+      },
+      "homepage" : "https://metacpan.org/release/MooX-Aspartame",
+      "license" : [
+         "http://dev.perl.org/licenses/"
+      ],
+      "repository" : {
+         "type" : "git",
+         "web" : "https://github.com/tobyink/p5-moox-aspartame"
+      }
+   },
+   "version" : "0.003",
+   "x_provides_scripts" : {}
+}

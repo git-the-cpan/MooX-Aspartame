@@ -4,14 +4,23 @@ MooX-Aspartame
 Created:      2013-06-30
 Home page:    <https://metacpan.org/release/MooX-Aspartame>
 Bug tracker:  <http://rt.cpan.org/Dist/Display.html?Queue=MooX-Aspartame>
-Maintainer:   Toby Inkster <mailto:tobyink@cpan.org>
+Maintainer:   Toby Inkster (TOBYINK) <tobyink@cpan.org>
 
-0.002  2013-07-17
+0.003	2013-08-13
+
+ - (Addition) New keyword `namespace`.
+ - (Change) Don't export Try::Tiny to the outer scope, as it's not lexical.
+ - (Change) Misc internal refactoring.
+ - (Change) Re-implement relative package names, in a new, saner way.
+ - (Packaging) use Dist::Inkt.
+ - (Update) use Function::Parameters 1.0201, because it has configurable
+   type constraint reification.
+
+0.002	2013-07-17
 
  - (Addition) use MooX::late 0.014.
+ - (Change) Misc internal refactoring.
  - (Update) use Moo 1.003000.
- - Misc internal refactoring.
 
-0.001  2013-07-01  # Initial release
-
+0.001	2013-07-01	Initial release
 

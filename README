@@ -17,42 +17,48 @@ SYNOPSIS
           has job_title => (is => "rwp", isa => Str);
           has employer  => (is => "rwp", isa => InstanceOf["Company"]);
       
-          method change_job ( (Object) $employer, (Str) $title ) {
+          method change_job ( Object $employer, Str $title ) {
              $self->_set_job_title($title);
              $self->_set_employer($employer);
           }
       
-          method promote ( (Str) $title ) {
+          method promote ( Str $title ) {
              $self->_set_job_title($title);
           }
        }
 
 DESCRIPTION
-    This is something like a lightweight MooseX::Declare. It gives you three
+    This is something like a lightweight MooseX::Declare. It gives you four
     keywords:
 
-    "class"
+    `class`
         Declares a class. By default this uses Moo. But it's possible to
-        promote a class to Moose with the "using" option:
+        promote a class to Moose with the `using` option:
 
            class Employee using Moose { ... }
 
-        Other options for classes are "extends" for setting a parent class,
-        and "with" for composing roles.
+        Other options for classes are `extends` for setting a parent class,
+        and `with` for composing roles.
 
-    "role"
-        Declares a role using Moo::Role. This also supports "using Moose",
-        and "with".
+           class Employee extends Person with Employment;
 
-    "exporter"
-        Declares a utilities package. This supports a "providing" option to
+        Note that if you're not directly defining any methods for a class, you
+        can use a trailing semicolon (as above) rather than an empty `{ }`
+        pair.
+
+    `role`
+        Declares a role using Moo::Role. This also supports `using Moose`, and
+        `with`.
+
+    `exporter`
+        Declares a utilities package. This supports a `providing` option to
         add function names to @EXPORT_OK.
 
            exporter Utils providing find_person, find_company {
-              fun find_person ( (Str) $name ) {
+              fun find_person ( Str $name ) {
                  ...;
               }
-              fun find_company ( (Str) $name ) {
+              fun find_company ( Str $name ) {
                  ...;
               }
            }
@@ -60,15 +66,41 @@ DESCRIPTION
            use Utils find_person => { -as => "get_person" };
            my $bob = get_person("Bob");
 
-        Exporters are built using Exporter::TypeTiny.
+        Exporters are built using Exporter::TypeTiny by default, but there's a
+        `using Exporter` option.
 
-    Within the packages declared by these keywords, the following features
-    are always available:
+    `namespace`
+        Declares a package without giving it any special semantics.
+
+    Note that the names of the declared things get qualified like subs. So:
+
+       package Foo;
+       use MooX::Aspartame;
+   
+       class Bar {     # declares Foo::Bar
+          role Baz {   # declares Foo::Bar::Baz
+             ...;
+          }
+          class Xyzzy with Baz;
+       }
+       exporter ::Quux {  # declares Quux
+          ...;
+       }
+   
+       package main;
+       use MooX::Aspartame;
+   
+       class Bar {     # declares Bar
+          ...;
+       }
+
+    Within the packages declared by these keywords, the following features are
+    always available:
 
     *   Perl 5.14 features. (MooX::Aspartame requires Perl 5.14.)
 
-    *   Strictures, including "FATAL" warnings, but not "uninitialized",
-        "void", "once" or "numeric" warnings.
+    *   Strictures, including `FATAL` warnings, but not `uninitialized`,
+        `void`, `once` or `numeric` warnings.
 
     *   Function::Parameters (in strict mode)
 
@@ -76,13 +108,13 @@ DESCRIPTION
 
     *   Types::Standard type constraints
 
-    *   Carp's "confess"
+    *   Carp's `confess`
 
-    *   Scalar::Util's "blessed"
+    *   Scalar::Util's `blessed`
 
-    *   Constants for "true" and "false".
+    *   Constants for `true` and `false`.
 
-    *   namespace::sweep, except within exporters.
+    *   namespace::sweep (only for classes and roles).
 
     It is possible to inject other functions into all packages using:
 
@@ -91,7 +123,7 @@ DESCRIPTION
           'List::MoreUtils' => [qw( any all none )],
        ];
 
-    In the "outer" package (where MooX::Aspartame is used), Try::Tiny and
+    In the "outer" package (where MooX::Aspartame is used), strictures and
     true are provided.
 
 BUGS
@@ -113,8 +145,8 @@ AUTHOR
 COPYRIGHT AND LICENCE
     This software is copyright (c) 2013 by Toby Inkster.
 
-    This is free software; you can redistribute it and/or modify it under
-    the same terms as the Perl 5 programming language system itself.
+    This is free software; you can redistribute it and/or modify it under the
+    same terms as the Perl 5 programming language system itself.
 
 DISCLAIMER OF WARRANTIES
     THIS PACKAGE IS PROVIDED "AS IS" AND WITHOUT ANY EXPRESS OR IMPLIED

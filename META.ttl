@@ -1,103 +1,109 @@
-@prefix cpan:  <http://purl.org/NET/cpan-uri/person/> .
-@prefix cpant: <http://purl.org/NET/cpan-uri/terms#> .
 @prefix dc:    <http://purl.org/dc/terms/> .
-@prefix dcs:   <http://ontologi.es/doap-changeset#> .
-@prefix dist:  <http://purl.org/NET/cpan-uri/dist/MooX-Aspartame/> .
 @prefix doap:  <http://usefulinc.com/ns/doap#> .
+@prefix doap-changeset: <http://ontologi.es/doap-changeset#> .
+@prefix doap-deps: <http://ontologi.es/doap-deps#> .
 @prefix foaf:  <http://xmlns.com/foaf/0.1/> .
-@prefix nfo:   <http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#> .
 @prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix xsd:   <http://www.w3.org/2001/XMLSchema#> .
 
-dist:project
-	a                 doap:Project;
-	doap:name         "MooX-Aspartame";
-	cpant:perl_version_from [
-		a nfo:FileDataObject;
-		a nfo:SourceCode;
-		rdfs:label "MooX::Aspartame";
-		nfo:fileName "lib/MooX/Aspartame.pm";
-		nfo:programmingLanguage "Perl";
-	];
-	cpant:readme_from [
-		a nfo:FileDataObject;
-		a nfo:SourceCode;
-		rdfs:label "MooX::Aspartame";
-		nfo:fileName "lib/MooX/Aspartame.pm";
-		nfo:programmingLanguage "Perl";
-	];
-	cpant:requires    "Devel::Pragma 0.54"^^cpant:dsWithVersion;
-	cpant:requires    "Exporter::TypeTiny 0.014"^^cpant:dsWithVersion;
-	cpant:requires    "Function::Parameters 1.0104"^^cpant:dsWithVersion;
-	cpant:requires    "Import::Into 1.000000"^^cpant:dsWithVersion;
-	cpant:requires    "Keyword::Simple 0.01"^^cpant:dsWithVersion;
-	cpant:requires    "Module::Runtime 0.013"^^cpant:dsWithVersion;
-	cpant:requires    "Moo 1.003000"^^cpant:dsWithVersion;
-	cpant:requires    "MooX::late 0.014"^^cpant:dsWithVersion;
-	cpant:requires    "Scalar::Util 1.24"^^cpant:dsWithVersion;
-	cpant:requires    "Try::Tiny 0.12"^^cpant:dsWithVersion;
-	cpant:requires    "namespace::sweep 0.006"^^cpant:dsWithVersion;
-	cpant:requires    "true 0.18"^^cpant:dsWithVersion;
-	cpant:test_requires "Test::More 0.96"^^cpant:dsWithVersion;
-	cpant:version_from [
-		a nfo:FileDataObject;
-		a nfo:SourceCode;
-		rdfs:label "MooX::Aspartame";
-		nfo:fileName "lib/MooX/Aspartame.pm";
-		nfo:programmingLanguage "Perl";
-	];
-	dc:contributor    cpan:tobyink;
-	doap:bug-database <http://rt.cpan.org/Dist/Display.html?Queue=MooX-Aspartame>;
-	doap:created      "2013-06-30"^^xsd:date;
-	doap:developer    cpan:tobyink;
-	doap:download-page <https://metacpan.org/release/MooX-Aspartame>;
-	doap:homepage     <https://metacpan.org/release/MooX-Aspartame>;
-	doap:license      <http://dev.perl.org/licenses/>;
-	doap:maintainer   cpan:tobyink;
+<http://dev.perl.org/licenses/>
+	dc:title             "the same terms as the perl 5 programming language system itself".
+
+<http://purl.org/NET/cpan-uri/dist/MooX-Aspartame/project>
+	a                    doap:Project;
+	dc:contributor       <http://purl.org/NET/cpan-uri/person/tobyink>;
+	doap-deps:runtime-requirement [ doap-deps:on "Devel::Pragma 0.54"^^doap-deps:CpanId ], [
+		doap-deps:on "Exporter::TypeTiny 0.022"^^doap-deps:CpanId;
+	], [ doap-deps:on "Try::Tiny 0.12"^^doap-deps:CpanId ], [
+		doap-deps:on "namespace::sweep 0.006"^^doap-deps:CpanId;
+	], [ doap-deps:on "true 0.18"^^doap-deps:CpanId ], [
+		doap-deps:on "Function::Parameters 1.0201"^^doap-deps:CpanId;
+	], [
+		doap-deps:on "Import::Into 1.000000"^^doap-deps:CpanId;
+	], [
+		doap-deps:on "Keyword::Simple 0.01"^^doap-deps:CpanId;
+	], [
+		doap-deps:on "Module::Runtime 0.013"^^doap-deps:CpanId;
+	], [ doap-deps:on "Moo 1.003000"^^doap-deps:CpanId ], [ doap-deps:on "MooX::late 0.014"^^doap-deps:CpanId ], [ doap-deps:on "Scalar::Util 1.24"^^doap-deps:CpanId ], [ doap-deps:on "Type::Utils 0.022"^^doap-deps:CpanId ];
+	doap-deps:test-requirement [ doap-deps:on "Test::More 0.96"^^doap-deps:CpanId ], [ doap-deps:on "Test::Fatal"^^doap-deps:CpanId ];
+	doap:bug-database    <http://rt.cpan.org/Dist/Display.html?Queue=MooX-Aspartame>;
+	doap:created         "2013-06-30"^^xsd:date;
+	doap:developer       <http://purl.org/NET/cpan-uri/person/tobyink>;
+	doap:download-page   <https://metacpan.org/release/MooX-Aspartame>;
+	doap:homepage        <https://metacpan.org/release/MooX-Aspartame>;
+	doap:license         <http://dev.perl.org/licenses/>;
+	doap:maintainer      <http://purl.org/NET/cpan-uri/person/tobyink>;
+	doap:name            "MooX-Aspartame";
 	doap:programming-language "Perl";
-	doap:release      dist:v_0-001;
-	doap:release      dist:v_0-002;
-	doap:repository   [
+	doap:release         <http://purl.org/NET/cpan-uri/dist/MooX-Aspartame/v_0-001>, <http://purl.org/NET/cpan-uri/dist/MooX-Aspartame/v_0-002>, <http://purl.org/NET/cpan-uri/dist/MooX-Aspartame/v_0-003>;
+	doap:repository      [
 		a doap:GitRepository;
 		doap:browse <https://github.com/tobyink/p5-moox-aspartame>;
 	];
-	doap:shortdesc    "it seems sweet, but it probably has long-term adverse health effects".
+	doap:shortdesc       "it seems sweet, but it probably has long-term adverse health effects".
 
-dist:v_0-001
-	a                 doap:Version;
-	rdfs:label        "Initial release";
-	dc:identifier     "MooX-Aspartame-0.001"^^xsd:string;
-	dc:issued         "2013-07-01"^^xsd:date;
-	dcs:released-by   cpan:tobyink;
-	doap:file-release <http://backpan.cpan.org/authors/id/T/TO/TOBYINK/MooX-Aspartame-0.001.tar.gz>;
-	doap:revision     "0.001"^^xsd:string.
+<http://purl.org/NET/cpan-uri/dist/MooX-Aspartame/v_0-001>
+	a                    doap:Version;
+	rdfs:label           "Initial release";
+	dc:identifier        "MooX-Aspartame-0.001"^^xsd:string;
+	dc:issued            "2013-07-01"^^xsd:date;
+	doap-changeset:released-by <http://purl.org/NET/cpan-uri/person/tobyink>;
+	doap:file-release    <http://backpan.cpan.org/authors/id/T/TO/TOBYINK/MooX-Aspartame-0.001.tar.gz>;
+	doap:revision        "0.001"^^xsd:string.
 
-dist:v_0-002
-	a                 doap:Version;
-	dc:identifier     "MooX-Aspartame-0.002"^^xsd:string;
-	dc:issued         "2013-07-17"^^xsd:date;
-	dcs:changeset     [
-		dcs:item [
-			a dcs:Change;
+<http://purl.org/NET/cpan-uri/dist/MooX-Aspartame/v_0-002>
+	a                    doap:Version;
+	dc:identifier        "MooX-Aspartame-0.002"^^xsd:string;
+	dc:issued            "2013-07-17"^^xsd:date;
+	doap-changeset:changeset [
+		doap-changeset:item [
+			a doap-changeset:Change;
 			rdfs:label "Misc internal refactoring.";
-		];
-		dcs:item [
-			a dcs:Addition;
+		], [
+			a doap-changeset:Addition;
 			rdfs:label "use MooX::late 0.014.";
+		], [
+			a doap-changeset:Update;
+			rdfs:label "use Moo 1.003000.";
 		];
-		dcs:item [ a dcs:Update; rdfs:label "use Moo 1.003000." ];
 	];
-	dcs:released-by   cpan:tobyink;
-	doap:file-release <http://backpan.cpan.org/authors/id/T/TO/TOBYINK/MooX-Aspartame-0.002.tar.gz>;
-	doap:revision     "0.002"^^xsd:string.
+	doap-changeset:released-by <http://purl.org/NET/cpan-uri/person/tobyink>;
+	doap:file-release    <http://backpan.cpan.org/authors/id/T/TO/TOBYINK/MooX-Aspartame-0.002.tar.gz>;
+	doap:revision        "0.002"^^xsd:string.
 
-cpan:tobyink
-	a                 foaf:Person;
-	foaf:name         "Toby Inkster";
-	foaf:mbox         <mailto:tobyink@cpan.org>;
-	foaf:nick         "TOBYINK";
-	foaf:page         <https://metacpan.org/author/TOBYINK>.
+<http://purl.org/NET/cpan-uri/dist/MooX-Aspartame/v_0-003>
+	a                    doap:Version;
+	dc:identifier        "MooX-Aspartame-0.003"^^xsd:string;
+	dc:issued            "2013-08-13"^^xsd:date;
+	doap-changeset:changeset [
+		doap-changeset:item [
+			a doap-changeset:Change;
+			rdfs:label "Misc internal refactoring.";
+		], [
+			a doap-changeset:Update;
+			rdfs:label "use Function::Parameters 1.0201, because it has configurable type constraint reification.";
+		], [
+			a doap-changeset:Packaging;
+			rdfs:label "use Dist::Inkt.";
+		], [
+			a doap-changeset:Addition;
+			rdfs:label "New keyword `namespace`.";
+		], [
+			a doap-changeset:Change;
+			rdfs:label "Re-implement relative package names, in a new, saner way.";
+		], [
+			a doap-changeset:Change;
+			rdfs:label "Don't export Try::Tiny to the outer scope, as it's not lexical.";
+		];
+	];
+	doap-changeset:released-by <http://purl.org/NET/cpan-uri/person/tobyink>;
+	doap:file-release    <http://backpan.cpan.org/authors/id/T/TO/TOBYINK/MooX-Aspartame-0.003.tar.gz>;
+	doap:revision        "0.003"^^xsd:string.
 
-<http://dev.perl.org/licenses/>
-	dc:title          "the same terms as the perl 5 programming language system itself".
+<http://purl.org/NET/cpan-uri/person/tobyink>
+	a                    foaf:Person;
+	foaf:mbox            <mailto:tobyink@cpan.org>;
+	foaf:name            "Toby Inkster";
+	foaf:nick            "TOBYINK";
+	foaf:page            <https://metacpan.org/author/TOBYINK>.
 
