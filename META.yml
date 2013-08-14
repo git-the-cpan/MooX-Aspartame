@@ -8,7 +8,7 @@ build_requires:
 configure_requires:
   ExtUtils::MakeMaker: 6.17
 dynamic_config: 0
-generated_by: 'Dist::Inkt::Profile::TOBYINK version 0.005, CPAN::Meta::Converter version 2.120921'
+generated_by: 'Dist::Inkt::Profile::TOBYINK version 0.006, CPAN::Meta::Converter version 2.120921'
 keywords: []
 license: unknown
 meta-spec:
@@ -25,7 +25,28 @@ no_index:
 provides:
   MooX::Aspartame:
     file: lib/MooX/Aspartame.pm
-    version: 0.003
+    version: 0.005
+  MooX::Aspartame::CodeGenerator:
+    file: lib/MooX/Aspartame/CodeGenerator.pm
+    version: 0.005
+  MooX::Aspartame::CodeGenerator::Class:
+    file: lib/MooX/Aspartame/CodeGenerator/Class.pm
+    version: 0.005
+  MooX::Aspartame::CodeGenerator::Role:
+    file: lib/MooX/Aspartame/CodeGenerator/Role.pm
+    version: 0.005
+  MooX::Aspartame::DefineKeyword:
+    file: lib/MooX/Aspartame/DefineKeyword.pm
+    version: 0.005
+  MooX::Aspartame::ImportSet:
+    file: lib/MooX/Aspartame/ImportSet.pm
+    version: 0.005
+  MooX::Aspartame::MethodModifiers:
+    file: lib/MooX/Aspartame/MethodModifiers.pm
+    version: 0.005
+  MooX::Aspartame::Parser:
+    file: lib/MooX/Aspartame/Parser.pm
+    version: 0.005
 requires:
   Devel::Pragma: 0.54
   Exporter::TypeTiny: 0.022
@@ -46,5 +67,5 @@ resources:
   homepage: https://metacpan.org/release/MooX-Aspartame
   license: http://dev.perl.org/licenses/
   repository: https://github.com/tobyink/p5-moox-aspartame
-version: 0.003
+version: 0.005
 x_provides_scripts: {}

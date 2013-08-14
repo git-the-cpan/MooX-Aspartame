@@ -28,8 +28,10 @@ SYNOPSIS
        }
 
 DESCRIPTION
-    This is something like a lightweight MooseX::Declare. It gives you four
-    keywords:
+    This is something like a lightweight MooseX::Declare. (Only 40% as many
+    dependencies; and loads in about 25% of the time.)
+
+    It gives you three keywords:
 
     `class`
         Declares a class. By default this uses Moo. But it's possible to
@@ -50,25 +52,6 @@ DESCRIPTION
         Declares a role using Moo::Role. This also supports `using Moose`, and
         `with`.
 
-    `exporter`
-        Declares a utilities package. This supports a `providing` option to
-        add function names to @EXPORT_OK.
-
-           exporter Utils providing find_person, find_company {
-              fun find_person ( Str $name ) {
-                 ...;
-              }
-              fun find_company ( Str $name ) {
-                 ...;
-              }
-           }
-   
-           use Utils find_person => { -as => "get_person" };
-           my $bob = get_person("Bob");
-
-        Exporters are built using Exporter::TypeTiny by default, but there's a
-        `using Exporter` option.
-
     `namespace`
         Declares a package without giving it any special semantics.
 
@@ -83,7 +66,7 @@ DESCRIPTION
           }
           class Xyzzy with Baz;
        }
-       exporter ::Quux {  # declares Quux
+       class ::Quux {  # declares Quux
           ...;
        }
    
@@ -99,10 +82,33 @@ DESCRIPTION
 
     *   Perl 5.14 features. (MooX::Aspartame requires Perl 5.14.)
 
-    *   Strictures, including `FATAL` warnings, but not `uninitialized`,
-        `void`, `once` or `numeric` warnings.
+    *   Strictures, including `FATAL` warnings.
 
-    *   Function::Parameters (in strict mode)
+        But not `uninitialized`, `void`, `once` or `numeric` warnings, because
+        those are irritating.
+
+    *   Function::Parameters (in strict mode).
+
+        This provides the `fun` keyword.
+
+        Within roles and classes, it also provides `method`, and the `before`,
+        `after` and `around` method modifiers. Unlike Moo/Moose, within
+        `around` modifiers the coderef being wrapped is *not* available in
+        $_[0], but is instead found in the magic global variable `${^NEXT}`.
+
+    *   A `define` keyword to declare constants:
+
+           use MooX::Aspartame;
+   
+           class Calculator {
+              define PI = 3.2;
+              method circular_area (Num $r) {
+                 return PI * ($r ** 2);
+              }
+           }
+   
+           my $calc = Calculator->new;
+           say "The circle's area is ", $calc->circular_area(r => 1.0);
 
     *   Try::Tiny
 
@@ -131,13 +137,13 @@ BUGS
     <http://rt.cpan.org/Dist/Display.html?Queue=MooX-Aspartame>.
 
 SEE ALSO
-    Similar: MooseX::Declare.
+    Similar: MooseX::Declare, <https://github.com/stevan/p5-mop-redux>.
 
-    Main functionality exposed by this module: Moo, Function::Parameters,
-    Try::Tiny, Types::Standard, namespace::sweep, Exporter::TypeTiny.
+    Main functionality exposed by this module: Moo/MooX::late,
+    Function::Parameters, Try::Tiny, Types::Standard, namespace::sweep, true.
 
     Internals fueled by: Keyword::Simple, Module::Runtime, Import::Into,
-    Devel::Pragma.
+    Devel::Pragma, Attribute::Handlers.
 
 AUTHOR
     Toby Inkster <tobyink@cpan.org>.

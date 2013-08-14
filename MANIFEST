@@ -11,5 +11,13 @@ Makefile.PL
 README
 SIGNATURE
 dist.ini
+examples/calculator.pl
 lib/MooX/Aspartame.pm
+lib/MooX/Aspartame/CodeGenerator.pm
+lib/MooX/Aspartame/CodeGenerator/Class.pm
+lib/MooX/Aspartame/CodeGenerator/Role.pm
+lib/MooX/Aspartame/DefineKeyword.pm
+lib/MooX/Aspartame/ImportSet.pm
+lib/MooX/Aspartame/MethodModifiers.pm
+lib/MooX/Aspartame/Parser.pm
 t/01basic.t

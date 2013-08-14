@@ -6,6 +6,23 @@ Home page:    <https://metacpan.org/release/MooX-Aspartame>
 Bug tracker:  <http://rt.cpan.org/Dist/Display.html?Queue=MooX-Aspartame>
 Maintainer:   Toby Inkster (TOBYINK) <tobyink@cpan.org>
 
+0.005	2013-08-14
+
+ - (Change) Improvements handling comments when parsing.
+ - (Change) Massive amounts of refactoring to simplify maintenance and make
+   subclassing easier.
+
+0.004	2013-08-14
+
+ - (Addition) Implement `before`, `after` and `around` method modifiers.
+ - (Addition) Implement `define` keyword to declare constants.
+ - (Change) The `method` keyword is only available in classes and roles;
+   not plain namespaces.
+ - (Removal) Drop the `classmethod` keyword; it's better to use `method`
+   and give the invocant an explicit variable name.
+ - (Removal) Drop the `exporter` keyword; it is better to explicitly create
+   a class extending Exporter::TypeTiny or Exporter.
+
 0.003	2013-08-13
 
  - (Addition) New keyword `namespace`.

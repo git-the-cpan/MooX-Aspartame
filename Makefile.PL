@@ -7,7 +7,7 @@ my $meta = {
   "abstract"           => "it seems sweet, but it probably has long-term adverse health effects",
   "author"             => ["Toby Inkster (TOBYINK) <tobyink\@cpan.org>"],
   "dynamic_config"     => 0,
-  "generated_by"       => "Dist::Inkt::Profile::TOBYINK version 0.005, CPAN::Meta::Converter version 2.120921",
+  "generated_by"       => "Dist::Inkt::Profile::TOBYINK version 0.006, CPAN::Meta::Converter version 2.120921",
   "keywords"           => [],
   "license"            => ["perl_5"],
   "meta-spec"          => {
@@ -38,7 +38,20 @@ my $meta = {
                             test => { requires => { "Test::Fatal" => 0, "Test::More" => 0.96 } },
                           },
   "provides"           => {
-                            "MooX::Aspartame" => { file => "lib/MooX/Aspartame.pm", version => 0.003 },
+                            "MooX::Aspartame"                       => { file => "lib/MooX/Aspartame.pm", version => 0.005 },
+                            "MooX::Aspartame::CodeGenerator"        => { file => "lib/MooX/Aspartame/CodeGenerator.pm", version => 0.005 },
+                            "MooX::Aspartame::CodeGenerator::Class" => {
+                                                                         file => "lib/MooX/Aspartame/CodeGenerator/Class.pm",
+                                                                         version => 0.005,
+                                                                       },
+                            "MooX::Aspartame::CodeGenerator::Role"  => {
+                                                                         file => "lib/MooX/Aspartame/CodeGenerator/Role.pm",
+                                                                         version => 0.005,
+                                                                       },
+                            "MooX::Aspartame::DefineKeyword"        => { file => "lib/MooX/Aspartame/DefineKeyword.pm", version => 0.005 },
+                            "MooX::Aspartame::ImportSet"            => { file => "lib/MooX/Aspartame/ImportSet.pm", version => 0.005 },
+                            "MooX::Aspartame::MethodModifiers"      => { file => "lib/MooX/Aspartame/MethodModifiers.pm", version => 0.005 },
+                            "MooX::Aspartame::Parser"               => { file => "lib/MooX/Aspartame/Parser.pm", version => 0.005 },
                           },
   "release_status"     => "stable",
   "resources"          => {
@@ -53,7 +66,7 @@ my $meta = {
                                             },
                             X_identifier => "http://purl.org/NET/cpan-uri/dist/MooX-Aspartame/project",
                           },
-  "version"            => 0.003,
+  "version"            => 0.005,
   "x_provides_scripts" => {},
 };
 

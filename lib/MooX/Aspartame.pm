@@ -1,309 +1,80 @@
+use v5.14;
+use strict;
+use warnings FATAL => 'all';
+no warnings qw(void once uninitialized numeric);
+
 package MooX::Aspartame;
 
-my @crud;
-BEGIN { @crud = qw(void once uninitialized numeric) };
-
-use 5.014;
-use warnings FATAL => 'all';
-no warnings @crud;
-
 our $AUTHORITY = 'cpan:TOBYINK';
-our $VERSION   = '0.003';
+our $VERSION   = '0.005';
 
-use B                               qw(perlstring);
-use Carp                            qw(croak);
-use Devel::Pragma         0.54      qw(ccstash);
-use Exporter::TypeTiny    0.014     qw(mkopt);
-use Function::Parameters  1.0104    qw();
-use Import::Into          1.000000  qw();
-use Keyword::Simple       0.01      qw();
-use Module::Runtime       0.013     qw($module_name_rx module_notional_filename use_package_optimistically);
-use Moo                   1.002000  qw();
-use MooX::late            0.014     qw();
-use Scalar::Util          1.24      qw();
-use Try::Tiny             0.12      qw();
-use Type::Utils           0.022     qw();
-use namespace::sweep      0.006;
-use true                  0.18;
+use Devel::Pragma qw(ccstash);
+use Exporter::TypeTiny qw(mkopt);
+use Keyword::Simple qw();
+use Module::Runtime qw(use_package_optimistically);
+use true qw();
 
-my @IMPORTS;
+sub class_for_import_set
+{
+	require MooX::Aspartame::ImportSet;
+	'MooX::Aspartame::ImportSet';
+}
+
+sub class_for_parser
+{
+	require MooX::Aspartame::Parser;
+	'MooX::Aspartame::Parser';
+}
 
 sub unimport
 {
-	shift;
-	Keyword::Simple::undefine $_ for qw/ class role exporter namespace /;
+	my $class = shift;
+	Keyword::Simple::undefine($_)
+		for $class->class_for_parser->keywords;
 }
 
 sub import
 {
-	my $class  = shift;
-	my $caller = caller;
+	my $caller  = caller;
+	my $class   = shift;
 	
-	our $_;
-	$_->[0]->import::into($caller, @{ $_->[1] || [] })
-		for (
-			[ strict      => [] ],
-			[ warnings    => [ FATAL => 'all' ] ],
-			[ feature     => [ ':5.14' ] ],
-			[ true        => [] ],
-		);
-	warnings->unimport(@crud);
+	my $imports = ref($_[0]) eq 'ARRAY'
+		? $class->class_for_import_set->new(imports => mkopt(shift))
+		: undef;
 	
-	my $imports = mkopt($_[0] || []);
-	push @IMPORTS, $imports;
-	my $id = $#IMPORTS;
+	'strict'->import();
+	'warnings'->import(FATAL => 'all');
+	'warnings'->unimport(qw(once void uninitialized numeric));
+	'feature'->import(':5.14');
+	'true'->import();
 	
-	for my $kw (qw/class role exporter namespace/)
+	for my $kw (qw/class role namespace/)
 	{
 		Keyword::Simple::define $kw => sub
 		{
-			# Figure out the parent package holding the declaration.
-			my $caller = ccstash;
+			my $ref = $_[0];
 			
-			# First thing after the keyword is the name of the package
-			# being declared.
-			my $ref = shift;
-			my ($space1, $package, $space2) = ($$ref =~ /^(\s*)((?:::)?$module_name_rx)\b(\s*)/sm);
-			substr($$ref, 0, length($space1.$package.$space2)) = "";
+			my $parser = $class->class_for_parser->new(
+				keyword   => $kw,
+				ref       => $ref,
+				ccstash   => scalar(ccstash),
+			);
+			$parser->parse;
 			
-			# This is optionally followed by a version number.
-			my $ver;
-			if (my ($version, $space4) = ($$ref =~ /^(v?[0-9._]+)\b(\s*)/sm))
-			{
-				$ver = $version;
-				substr($$ref, 0, length($version.$space4)) = "";
-			}
-			
-			# Then a list of relationships such as `extends Foo`.
-			my $RELS = join '|', map quotemeta, $class->_relationships($kw);
-			my %relationships;
-			while ($$ref =~ /^($RELS)(\s+)((?:::)?$module_name_rx(?:\s*,\s*(?:::)?$module_name_rx)*)\b(\s*)/sm)
-			{
-				my $rel = $1; my $space1 = $2; my $modules = $3; my $space2 = $4;
-				substr($$ref, 0, length($rel.$space1.$modules.$space2)) = "";
-				my @modules = split /\s*,\s*/, $modules;
-				push @{ $relationships{$rel}||=[] }, map $class->_qualify($_, $caller, $rel), @modules;
-			}
-			
-			# Next we expect either the start of a block, or a semicolon.
-			die "syntax error near $kw $package - expected '{' or ';' - got '".substr($$ref, 0, 6)."'"
-				unless $$ref =~ m/^([\{;])/;
-			my $empty = ($1 eq ';');
-			$$ref =~ s/^\{//;
-			
-			# Create the package declaration
-			$package = $class->_qualify($package, $caller, 'package');
-			my $inject = "{ package $package; ";
-			$inject .= "BEGIN { our \$VERSION = '$ver' };" if defined $ver;
-			$inject .= "BEGIN { \$INC{${\ perlstring module_notional_filename $package }} = __FILE__ };";
-			$inject .= $class->_package_preamble($kw, $package, $empty, %relationships);
-			$inject .= "BEGIN { '$class'->_do_imports('$package', $id) };" if @$imports && !$empty;
-			$inject .= "}" if $empty;
-			
-			# Inject it!
-			substr($$ref, 0, 0) = $inject;
-		}
+			my $code = $parser->code_generator($imports)->generate;
+			substr($$ref, 0, 0) = ($parser->is_empty ? "{ $code }" : "{ $code ");
+		};
 	}
 }
 
-sub _relationships
-{
-	shift;
-	my ($kw) = @_;
-	return qw(with using)          if $kw eq q(role);
-	return qw(with extends using)  if $kw eq q(class);
-	return qw(providing using)     if $kw eq q(exporter);
-	return qw();
-}
-
-sub _should_qualify
-{
-	shift;
-	return 1 if $_[0] =~ /^(package|with|extends)$/;
-}
-
-sub _qualify
-{
-	my $class = shift;
-	my ($bareword, $caller, $rel) = @_;
-	return $1                    if $bareword =~ /^::(.+)$/;
-	return $bareword             if $caller eq 'main';
-	return $bareword             if $bareword =~ /::/;
-	return "$caller\::$bareword" if $class->_should_qualify($rel);
-	return $bareword;
-}
-
-sub _function_parameters_args
+sub at_runtime
 {
 	my $class = shift;
 	my ($pkg) = @_;
-	
-	my $reify = sub {
-		require Type::Utils;
-		Type::Utils::dwim_type($_[0], for => $_[1]);
-	};
-	
-	return +{
-		fun => {
-			name                 => 'optional',
-			default_arguments    => 1,
-			check_argument_count => 1,
-			named_parameters     => 1,
-			types                => 1,
-			reify_type           => $reify,
-		},
-		method => {
-			name                 => 'optional',
-			default_arguments    => 1,
-			check_argument_count => 1,
-			named_parameters     => 1,
-			types                => 1,
-			reify_type           => $reify,
-			attrs                => ':method',
-			shift                => '$self',
-			invocant             => 1,
-		},
-		classmethod => {
-			name                 => 'optional',
-			default_arguments    => 1,
-			check_argument_count => 1,
-			named_parameters     => 1,
-			types                => 1,
-			reify_type           => $reify,
-			attributes           => ':method',
-			shift                => '$class',
-			invocant             => 1,
-		},
-	};
-}
-
-sub _package_preamble_always
-{
-	my $class = shift;
-	my ($kw, $package, $empty) = @_;
-	
-	return if $empty;
-	
-	return (
-		'use Carp qw(confess);',
-		"use Function::Parameters $class\->_function_parameters_args(q[$package]);",
-		'use Scalar::Util qw(blessed);',
-		'use Try::Tiny;',
-		'use Types::Standard qw(-types);',
-		'use constant { true => !!1, false => !!0 };',
-		"no warnings qw(@crud);",
-	);
-}
-
-sub _package_preamble_relationship_extends
-{
-	my $class = shift;
-	my ($kw, $package, $empty, $classes) = @_;
-	
-	return unless @$classes;
-	return sprintf "extends(%s);", join ",", map perlstring($_), @$classes;
-}
-
-sub _package_preamble_relationship_providing
-{
-	my $class = shift;
-	my ($kw, $package, $empty, $funcs) = @_;
-	
-	return unless @$funcs;
-	return sprintf "BEGIN { push(our \@EXPORT_OK => %s) };", join ",", map perlstring($_), @$funcs;
-}
-
-{
-	my %TEMPLATE1 = (
-		Moo   => { class => 'use Moo; use MooX::late;',                role => 'use Moo::Role; use MooX::late;' },
-		Moose => { class => 'use Moose;',                              role => 'use Moose::Role;' },
-		Mouse => { class => 'use Mouse;',                              role => 'use Mouse::Role;' },
-		Tiny  => { exporter => 'use parent qw( Exporter::TypeTiny );', role => 'use Role::Tiny;' },
-		'Exporter::TypeTiny'  => { exporter => 'use parent qw( Exporter::TypeTiny );' },
-		'Exporter'            => { exporter => 'use Exporter qw( import );' },
-		(map { $_ => { role => "use $_;" } } qw/ Role::Basic Role::Tiny Moo::Role Mouse::Role Moose::Role /)
-	);
-	my %TEMPLATE2 = (
-		class    => 'use namespace::sweep;',
-		role     => 'use namespace::sweep;',
-	);
-	
-	# For use with missing 'using' option
-	$TEMPLATE1{''} = +{
-		%{ $TEMPLATE1{'Moo'} },
-		%{ $TEMPLATE1{'Exporter::TypeTiny'} },
-		namespace => '',
-	};
-	
-	sub _package_preamble_relationship_using
+	for my $task (@{ $MooX::Aspartame::AT_RUNTIME })
 	{
-		my $class = shift;
-		my ($kw, $package, $empty, $using) = @_;
-		(
-			($TEMPLATE1{$using//''}{$kw} // croak("Cannot build $kw using $using")),
-			($TEMPLATE2{$kw} // ''),
-		)
-	}
-}
-
-sub _package_preamble_relationship_with
-{
-	my $class = shift;
-	my ($kw, $package, $empty, $roles) = @_;
-	
-	return unless @$roles;
-	return sprintf "with(%s);", join ",", map perlstring($_), @$roles;
-}
-
-sub _package_preamble
-{
-	my $class = shift;
-	my ($kw, $package, $empty, %relationships) = @_;
-	
-	my @lines = (
-		$class->_package_preamble_relationship_using(
-			$kw,
-			$package,
-			$empty,
-			$relationships{using}[0],
-		),
-		$class->_package_preamble_always(
-			$kw,
-			$package,
-			$empty,
-		),
-	);
-	
-	for my $key (sort keys %relationships)
-	{
-		next if $key eq 'using';
-		
-		my $method = "_package_preamble_relationship_$key";
-		push @lines, $class->$method(
-			$kw,
-			$package,
-			$empty,
-			$relationships{$key},
-		);
-	}
-	
-	join "\n", @lines;
-}
-
-sub _do_imports
-{
-	shift;
-	my ($package, $importset) = @_;
-	
-	my $imports = $IMPORTS[$importset];
-	
-	for my $import (@$imports)
-	{
-		my ($module, $params) = @$import;
-		use_package_optimistically($module)->import::into(
-			$package,
-			(ref($params) eq q(HASH) ? %$params : ref($params) eq q(ARRAY) ? @$params : ()),
-		);
+		my ($code, @args) = @$task;
+		eval "package $pkg; \$code->(\@args)";
 	}
 }
 
@@ -347,8 +118,10 @@ MooX::Aspartame - it seems sweet, but it probably has long-term adverse health e
 
 =head1 DESCRIPTION
 
-This is something like a lightweight L<MooseX::Declare>. It gives you
-four keywords:
+This is something like a lightweight L<MooseX::Declare>. (Only 40% as
+many dependencies; and loads in about 25% of the time.)
+
+It gives you three keywords:
 
 =over
 
@@ -373,26 +146,6 @@ C<< { } >> pair.
 Declares a role using L<Moo::Role>. This also supports C<< using Moose >>,
 and C<with>.
 
-=item C<exporter>
-
-Declares a utilities package. This supports a C<providing> option to
-add function names to C<< @EXPORT_OK >>.
-
-   exporter Utils providing find_person, find_company {
-      fun find_person ( Str $name ) {
-         ...;
-      }
-      fun find_company ( Str $name ) {
-         ...;
-      }
-   }
-   
-   use Utils find_person => { -as => "get_person" };
-   my $bob = get_person("Bob");
-
-Exporters are built using L<Exporter::TypeTiny> by default, but there's a
-C<< using Exporter >> option.
-
 =item C<namespace>
 
 Declares a package without giving it any special semantics.
@@ -410,7 +163,7 @@ Note that the names of the declared things get qualified like subs. So:
       }
       class Xyzzy with Baz;
    }
-   exporter ::Quux {  # declares Quux
+   class ::Quux {  # declares Quux
       ...;
    }
    
@@ -432,12 +185,38 @@ Perl 5.14 features. (MooX::Aspartame requires Perl 5.14.)
 
 =item *
 
-Strictures, including C<FATAL> warnings, but not C<uninitialized>, C<void>,
-C<once> or C<numeric> warnings.
+Strictures, including C<FATAL> warnings. 
+
+But not C<uninitialized>, C<void>, C<once> or C<numeric> warnings,
+because those are irritating.
 
 =item *
 
-L<Function::Parameters> (in strict mode)
+L<Function::Parameters> (in strict mode).
+
+This provides the C<fun> keyword.
+
+Within roles and classes, it also provides C<method>, and the
+C<before>, C<after> and C<around> method modifiers. Unlike Moo/Moose,
+within C<around> modifiers the coderef being wrapped is I<not> available
+in C<< $_[0] >>, but is instead found in the magic global variable
+C<< ${^NEXT} >>.
+
+=item *
+
+A C<define> keyword to declare constants:
+
+   use MooX::Aspartame;
+   
+   class Calculator {
+      define PI = 3.2;
+      method circular_area (Num $r) {
+         return PI * ($r ** 2);
+      }
+   }
+   
+   my $calc = Calculator->new;
+   say "The circle's area is ", $calc->circular_area(r => 1.0);
 
 =item *
 
@@ -483,14 +262,16 @@ L<http://rt.cpan.org/Dist/Display.html?Queue=MooX-Aspartame>.
 =head1 SEE ALSO
 
 Similar:
-L<MooseX::Declare>.
+L<MooseX::Declare>,
+L<https://github.com/stevan/p5-mop-redux>.
 
 Main functionality exposed by this module:
-L<Moo>, L<Function::Parameters>, L<Try::Tiny>, L<Types::Standard>,
-L<namespace::sweep>, L<Exporter::TypeTiny>.
+L<Moo>/L<MooX::late>, L<Function::Parameters>, L<Try::Tiny>,
+L<Types::Standard>, L<namespace::sweep>, L<true>.
 
 Internals fueled by:
-L<Keyword::Simple>, L<Module::Runtime>, L<Import::Into>, L<Devel::Pragma>.
+L<Keyword::Simple>, L<Module::Runtime>, L<Import::Into>, L<Devel::Pragma>,
+L<Attribute::Handlers>.
 
 =head1 AUTHOR
 
